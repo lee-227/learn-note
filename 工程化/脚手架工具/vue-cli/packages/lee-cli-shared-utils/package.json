@@ -1,0 +1,13 @@
+{
+  "name": "lee-cli-shared-utils",
+  "version": "0.0.0",
+  "description": "lee-cli-shared-utils",
+  "author": "lee <lee_227@163.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.js",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "execa": "^5.1.1"
+  }
+}
