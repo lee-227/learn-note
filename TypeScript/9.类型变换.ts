@@ -564,6 +564,10 @@ namespace i {
  * Overwrite<T, U>顾名思义,是用U的属性覆盖T的相同属性.
  */
 namespace p {
+  type Diff<T extends object, U extends object> = Pick<
+    T,
+    SetDifference<keyof T, keyof U>
+  >;
   type Intersection<T extends object, U extends object> = Pick<
     T,
     Extract<keyof T, keyof U> & Extract<keyof U, keyof T>
