@@ -216,3 +216,73 @@ namespace space10 {
         'close-item': (data: { item: any, index: number }) => true,
     }>
 }
+
+/**
+ * 13. LengthOfTuple
+ */
+namespace space13 {
+    type LengthOfTuple<T> = T extends any[] ? T['length'] : T
+    type A = LengthOfTuple<['B', 'F', 'E']> // 3
+    type B = LengthOfTuple<[]> // 0
+}
+
+/**
+ * 14. FirstItem 得到元组类型中的第一个元素
+ */
+namespace space14 {
+    type FirstItem<T> = T extends [infer R, ...any[]] ? R : T
+    type A = FirstItem<[string, number, boolean]> // string
+    type B = FirstItem<['B', 'F', 'E']> // 'B'
+}
+
+/**
+ * 15. LastItem 得到元组类型中的最后一个元素
+ */
+namespace space15 {
+    type LastItem<T, P = never> = T extends [infer L, ...infer R] ? LastItem<R, L> : P
+    type A = LastItem<[string, number, boolean]> // boolean
+    type B = LastItem<['B', 'F', 'E']> // 'E'
+    type C = LastItem<[]> // never
+}
+
+/**
+ * 16. Shift 移除元组类型中的第一个类型
+ */
+namespace space16 {
+    type Shift<T> = T extends [infer L, ...infer R] ? R : T
+    type A = Shift<[1, 2, 3]> // [2,3]
+    type B = Shift<[1]> // []
+    type C = Shift<[]> // []
+}
+
+/**
+ * 17. Push 在元组类型T中添加新的类型I
+ */
+namespace space17 {
+    type Push<T, P> = T extends any[] ? [...T, P] : T
+    type A = Push<[1, 2, 3], 4> // [1,2,3,4]
+    type B = Push<[1], 2> // [1, 2]
+}
+
+/**
+ * 18. ReverseTuple 反转元组
+ */
+namespace space18 {
+    type ReverseTuple<T, P extends any[] = []> = T extends [infer L, ...infer R] ? ReverseTuple<R, [L, ...P]> : P
+    type A = ReverseTuple<[string, number, boolean]> // [boolean, number, string]
+    type B = ReverseTuple<[1, 2, 3]> // [3,2,1]
+    type C = ReverseTuple<[]> // []
+}
+
+/**
+ * 19. Flat 拍平元组
+ */
+namespace space19 {
+    type Flat<T, P extends any[] = [], N extends any[] = []> = T extends [infer L, ...infer R] ?
+        L extends any[] ? Flat<L, P, R> : Flat<R, [...P, L]>
+    : P
+    type A = Flat<[1, 2, 3]> // [1,2,3]
+    type B = Flat<[1, [2, 3], [4, [5, [6]]]]> // [1,2,3,4,5,6]
+    type C = Flat<[]> // []
+    type D = Flat<[1]> // [1]
+}
