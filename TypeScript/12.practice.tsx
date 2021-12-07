@@ -119,3 +119,100 @@ namespace space10 {
     type a1 = CamelCase<'handle-open-flag'>         // HandleOpenFlag
     type a2 = CamelCase<'open-flag'>                // OpenFlag
 }
+
+/**
+ * 11. ObjectAccessPaths 得到对象中的值访问字符串
+ */
+
+namespace space11 {
+    // 简单来说，就是根据如下对象类型：
+    /*
+    {
+        home: {
+            topBar: {
+                title: '顶部标题',
+                welcome: '欢迎登录'
+            },
+            bottomBar: {
+                notes: 'XXX备案，归XXX所有',
+            },
+        },
+        login: {
+            username: '用户名',
+            password: '密码'
+        }
+    }
+    */
+    // 得到联合类型：
+    /*
+    home.topBar.title | home.topBar.welcome | home.bottomBar.notes | login.username | login.password
+    */
+    type ObjectAccessPaths<T, R extends string = ``, K = keyof T> =
+        K extends keyof T ?
+        K extends string ?
+        T[K] extends Record<string, any> ?
+        ObjectAccessPaths<T[K], `${R}.${K}`>
+        : `${R}.${K}` extends `.${infer R}` ? R : never
+        : never
+        : never;
+    // 完成 createI18n 函数中的 ObjectAccessPaths<Schema>，限制函数i18n的参数为合法的属性访问字符串
+    function createI18n<Schema>(schema: Schema): ((path: ObjectAccessPaths<Schema>) => string) { return [{ schema }] as any }
+
+    // i18n函数的参数类型为：home.topBar.title | home.topBar.welcome | home.bottomBar.notes | login.username | login.password
+    const i18n = createI18n({
+        home: {
+            topBar: {
+                title: '顶部标题',
+                welcome: '欢迎登录'
+            },
+            bottomBar: {
+                notes: 'XXX备案，归XXX所有',
+            },
+        },
+        login: {
+            username: '用户名',
+            password: '密码'
+        }
+    })
+
+    i18n('home.topBar.title')           // correct
+    i18n('home.topBar.welcome')         // correct
+    i18n('home.bottomBar.notes')        // correct
+
+    // i18n('home.login.abc')              // error，不存在的属性
+    // i18n('home.topBar')                 // error，没有到最后一个属性
+}
+
+/**
+ * 12. ComponentEmitsType 定义组件的监听事件类型
+ */
+
+namespace space10 {
+    // 实现 ComponentEmitsType<Emits> 类型，将
+    /*
+    {
+        'handle-open': (flag: boolean) => true,
+        'preview-item': (data: { item: any, index: number }) => true,
+        'close-item': (data: { item: any, index: number }) => true,
+    }
+    */
+    // 转化为类型
+    /*
+    {
+        onHandleOpen?: (flag: boolean) => void,
+        onPreviewItem?: (data: { item: any, index: number }) => void,
+        onCloseItem?: (data: { item: any, index: number }) => void,
+    }
+    */
+    type CapitalizeString<T> = T extends `${infer L}${infer R}` ? `${Uppercase<L>}${R}` : never;
+    type CamelCase<T extends string, S extends string = ''> =
+        T extends `${infer L}-${infer T}${infer R}` ? CamelCase<R, `${S}${L}${Uppercase<T>}`> : CapitalizeString<`${S}${T}`>;
+    type ComponentEmitsType<T> = {
+        [K in keyof T as K extends string ? `on${CamelCase<K>}` : '']?: T[K] extends (...args: infer A) => true ? (...args: A) => void : T[K]
+    }
+    type a = ComponentEmitsType<{
+        'handle-open': (flag: boolean) => true,
+        'preview-item': (data: { item: any, index: number }) => true,
+        'close-item': (data: { item: any, index: number }) => true,
+    }>
+}
