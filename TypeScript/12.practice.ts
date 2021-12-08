@@ -278,11 +278,46 @@ namespace space18 {
  * 19. Flat 拍平元组
  */
 namespace space19 {
-    type Flat<T, P extends any[] = [], N extends any[] = []> = T extends [infer L, ...infer R] ?
-        L extends any[] ? Flat<L, P, R> : Flat<R, [...P, L]>
-    : P
+    type Flat<T, P extends any[] = []> = T extends [infer L, ...infer R] ?
+        [...(L extends any[] ? Flat<L> : [L]), ...Flat<R>, ...P]
+        : T
     type A = Flat<[1, 2, 3]> // [1,2,3]
     type B = Flat<[1, [2, 3], [4, [5, [6]]]]> // [1,2,3,4,5,6]
     type C = Flat<[]> // []
     type D = Flat<[1]> // [1]
+}
+
+/**
+ * 20. Repeat<T,C> 复制类型T为C个元素的元组类型
+ */
+namespace space20 {
+    type Repeat<T, N, P extends any[] = []> = N extends P['length'] ? P : Repeat<T, N, [...P, T]>
+    type A = Repeat<number, 3> // [number, number, number]
+    type B = Repeat<string, 2> // [string, string]
+    type C = Repeat<1, 1> // [1]
+    type D = Repeat<0, 0> // []
+}
+
+/**
+ * 21. Filter<T,A> 保留元组类型T中的A类型
+ */
+namespace space21 {
+    type Filter<T, K, P extends any[] = []> = T extends [infer L, ...infer R] ?
+        L extends K ? Filter<R, K, [...P, L]> : Filter<R, K, [...P]>
+        : P
+    type A = Filter<[1, 'BFE', 2, true, 'dev'], number> // [1, 2]
+    type B = Filter<[1, 'BFE', 2, true, 'dev'], string> // ['BFE', 'dev']
+    type C = Filter<[1, 'BFE', 2, any, 'dev'], string> // ['BFE', any, 'dev']
+}
+
+/**
+ * 22. FindIndex<T,E> 找出E类型在元组类型T中的下标
+ */
+namespace space22 {
+    type FindIndex<T, N, D extends any[] = []> = T extends [infer L, ...infer R] ?
+        L extends N ? D['length'] : FindIndex<R, N, [...D, null]> 
+    : never
+    type A = [any, never, 1, '2', true]
+    type B = FindIndex<A, 1> // 2
+    type C = FindIndex<A, 3> // never
 }
