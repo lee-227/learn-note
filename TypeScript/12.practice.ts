@@ -314,10 +314,30 @@ namespace space21 {
  * 22. FindIndex<T,E> 找出E类型在元组类型T中的下标
  */
 namespace space22 {
+    type Equal<T, E> = [T] extends [E] ? [E] extends [T] ?
+        keyof T extends keyof E ? keyof E extends keyof T ? true : false : false
+        : false : false;
     type FindIndex<T, N, D extends any[] = []> = T extends [infer L, ...infer R] ?
-        L extends N ? D['length'] : FindIndex<R, N, [...D, null]> 
-    : never
+        Equal<L, N> extends true ? D['length'] : FindIndex<R, N, [...D, null]>
+        : never
     type A = [any, never, 1, '2', true]
     type B = FindIndex<A, 1> // 2
     type C = FindIndex<A, 3> // never
+}
+
+/**
+ * 23. Equal<T, E> 判断 T 跟 E 是否是同样的类型
+ */
+namespace space23 {
+    type Equal<T, E> = [T] extends [E] ? [E] extends [T] ?
+        keyof T extends keyof E ? keyof E extends keyof T ? true : false : false
+        : false : false;
+
+    type A = Equal<any, any> // true
+    type B = Equal<any, 1> // false
+    type C = Equal<never, never> // true
+    type D = Equal<'BFE', 'BFE'> // true
+    type E = Equal<'BFE', string> // false
+    type F = Equal<1 | 2, 2 | 1> // true
+    type G = Equal<{ a: number }, { a: number }> // true
 }
