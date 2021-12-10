@@ -340,4 +340,88 @@ namespace space23 {
     type E = Equal<'BFE', string> // false
     type F = Equal<1 | 2, 2 | 1> // true
     type G = Equal<{ a: number }, { a: number }> // true
+
+    /*
+    *  使用 [T] extends [K] ? [K] extends [T]， 而不是直接使用 T extends K ? K extends T，具体原因是因为泛型条件类型前者不会分布，后者会分布
+    *
+    *  使用 `keyof T extends keyof K ? keyof K extends keyof T`判断的原因是用来区别 any与其他类型；
+    *  keyof any 得到的是 string|number|symbol
+    *  keyof number 得到的是 toString | toFixed | ...
+    */
+    type E1<T, K> = [T] extends [K] ? [K] extends [T] ? 'a' : 'b' : 'c'
+    type E2<T, K> = T extends K ? (K extends T ? 'a' : 'b') : 'c'
+
+    type e1 = E1<1 | 2, 2 | 1>          // a：不会分布
+    type e2 = E2<1 | 2, 2 | 1>          // a,b：会分布（即使是分布，那也应该是只有a呀？）；可能情况是这样的，在T extends K之后的 K extends T的后面的T，已经是收窄了；
+    // 第一步：(1 extends 2|1 ? {{1}} : 'c') | (2 extends 2|1 ? {{2}} : 'c')第一步两个都通过了
+    // 第二步：此时{{1}} 应该是 2|1 extends 1，{{2}} 应该是 2|1 extends 2，两个结果都是 'a'|'b'，所以最后结果是这个
+
+    type isExtend<T, K> = T extends K ? 'a' : 'b'
+    type h1 = isExtend<1 | 2 | 3, 1 | 2 | 4>                    // 是ab
+    type h2 = 1 | 2 | 3 extends 1 | 2 | 4 ? 'a' : 'b'           // b，难道不是 a,b吗？，由此可见，直接判断确定的类型与通过泛型类型的方式来判断是不一样的，直接类型不会分布，泛型会分布
+}
+
+/**
+ * 24. TupleToEnum 元组类型转换为枚举类型
+ */
+namespace space24 {
+    type A = ['str1', 'str2', 'str3'][number] // 元组中的所有类型转换为联合类型
+    type Equal<T, E> = [T] extends [E] ? [E] extends [T] ?
+        keyof T extends keyof E ? keyof E extends keyof T ? true : false : false
+        : false : false;
+    type FindIndex<T, N, D extends any[] = []> = T extends [infer L, ...infer R] ?
+        Equal<L, N> extends true ? D['length'] : FindIndex<R, N, [...D, null]>
+        : never
+    type TupleToEnum<T extends string[], E = false> = {
+        readonly [Key in T[number]]: E extends true ? FindIndex<T, Key> : Key
+    }
+    // 默认情况下，枚举对象中的值就是元素中某个类型的字面量类型
+    type a1 = TupleToEnum<["MacOS", "Windows", "Linux"]>
+    // -> { readonly MacOS: "MacOS", readonly Windows: "Windows", readonly Linux: "Linux" }
+
+    // 如果传递了第二个参数为true，则枚举对象中值的类型就是元素类型中某个元素在元组中的index索引，也就是数字字面量类型
+    type a2 = TupleToEnum<["MacOS", "Windows", "Linux"], true>
+    // -> { readonly MacOS: 0, readonly Windows: 1, readonly Linux: 2 }
+}
+
+/**
+ * 25. Slice 截取元组中的部分元素
+ */
+namespace space25 {
+    type Slice<T extends any[], S, E = T['length'], R extends any[] = [], B extends any[] = [], G extends any[] = []> =
+        T extends [infer L, ...infer F] ?
+        G['length'] extends E ?
+        [...R, L]
+        : B['length'] extends S ?
+        Slice<F, S, E, [...R, L], [...B], [...G, '']>
+        : Slice<F, S, E, [...R], [...B, ''], [...G, '']>
+        : R
+    type A1 = Slice<[any, never, 1, '2', true, boolean], 0, 2>          // [any,never,1]                    从第0个位置开始，保留到第2个位置的元素类型
+    type A2 = Slice<[any, never, 1, '2', true, boolean], 1, 3>          // [never,1,'2']                    从第1个位置开始，保留到第3个位置的元素类型
+    type A3 = Slice<[any, never, 1, '2', true, boolean], 1, 2>          // [never,1]                        从第1个位置开始，保留到第2个位置的元素类型
+    type A4 = Slice<[any, never, 1, '2', true, boolean], 2>             // [1,'2',true,boolean]             从第2个位置开始，保留后面所有元素类型
+    type A5 = Slice<[any], 2>                                           // []                               从第2个位置开始，保留后面所有元素类型
+    type A6 = Slice<[], 0>                                              // []                               从第0个位置开始，保留后面所有元素类型
+}
+
+/**
+ * 26. Splice 删除并且替换部分元素
+ */
+namespace space26 {
+    type Splice<T extends any[], S, E, P extends any[] = [], Start extends any[] = [], End extends any[] = [], Insert extends any[] = [], Res extends any[] = []> =
+        T extends [infer L, ...infer R] ?
+            Start['length'] extends S ?
+                Insert['length'] extends S ?
+                Splice<[L, ...R], S, E, P, Start, End, [...Insert, ''], [...Res, ...P]>
+                : End['length'] extends E ?
+                [...Res, L, ...R]
+                : Splice<R, S, E, P, Start, [...End, ''], [...Insert, ''], [...Res]>
+            : Splice<R, S, E, P, [...Start, ''], End, [...Insert, ''], [...Res, L]>
+        : Res
+    type A1 = Splice<[string, number, boolean, null, undefined, never], 0, 2>                   
+    // [boolean,null,undefined,never]               从第0开始删除，删除2个元素
+    type A2 = Splice<[string, number, boolean, null, undefined, never], 1, 3>                   
+    // [string,undefined,never]                     从第1开始删除，删除3个元素
+    type A3 = Splice<[string, number, boolean, null, undefined, never], 1, 2, [1, 2, 3]>        
+    // [string,1,2,3,null,undefined,never]          从第1开始删除，删除2个元素，替换为另外三个元素1,2,3
 }
