@@ -410,18 +410,132 @@ namespace space25 {
 namespace space26 {
     type Splice<T extends any[], S, E, P extends any[] = [], Start extends any[] = [], End extends any[] = [], Insert extends any[] = [], Res extends any[] = []> =
         T extends [infer L, ...infer R] ?
-            Start['length'] extends S ?
-                Insert['length'] extends S ?
-                Splice<[L, ...R], S, E, P, Start, End, [...Insert, ''], [...Res, ...P]>
-                : End['length'] extends E ?
-                [...Res, L, ...R]
-                : Splice<R, S, E, P, Start, [...End, ''], [...Insert, ''], [...Res]>
-            : Splice<R, S, E, P, [...Start, ''], End, [...Insert, ''], [...Res, L]>
+        Start['length'] extends S ?
+        Insert['length'] extends S ?
+        Splice<[L, ...R], S, E, P, Start, End, [...Insert, ''], [...Res, ...P]>
+        : End['length'] extends E ?
+        [...Res, L, ...R]
+        : Splice<R, S, E, P, Start, [...End, ''], [...Insert, ''], [...Res]>
+        : Splice<R, S, E, P, [...Start, ''], End, [...Insert, ''], [...Res, L]>
         : Res
-    type A1 = Splice<[string, number, boolean, null, undefined, never], 0, 2>                   
+    type A1 = Splice<[string, number, boolean, null, undefined, never], 0, 2>
     // [boolean,null,undefined,never]               从第0开始删除，删除2个元素
-    type A2 = Splice<[string, number, boolean, null, undefined, never], 1, 3>                   
+    type A2 = Splice<[string, number, boolean, null, undefined, never], 1, 3>
     // [string,undefined,never]                     从第1开始删除，删除3个元素
-    type A3 = Splice<[string, number, boolean, null, undefined, never], 1, 2, [1, 2, 3]>        
+    type A3 = Splice<[string, number, boolean, null, undefined, never], 1, 2, [1, 2, 3]>
     // [string,1,2,3,null,undefined,never]          从第1开始删除，删除2个元素，替换为另外三个元素1,2,3
+}
+
+/**
+ * 27. OptionalKeys 获取对象类型中的可选属性的联合类型
+ */
+namespace space27 {
+    type ExcludeUndefined<T> = {
+        [K in keyof T]: Exclude<T[K], undefined>
+    }
+    type A = ExcludeUndefined<{ foo: number | undefined, bar?: string, flag: boolean }>
+    type OptionalKeys1<T> = { [K in keyof T]-?: undefined extends ExcludeUndefined<T>[K] ? K : never }[keyof T]
+    type OptionalKeys<T, K = keyof T> = K extends keyof T ? undefined extends ExcludeUndefined<T>[K] ? K : never : never
+    type a1 = OptionalKeys<{ foo: number | undefined, bar?: string, flag: boolean }>        // bar
+    type a2 = OptionalKeys<{ foo: number, bar?: string }>                                   // bar
+    type a3 = OptionalKeys<{ foo: number, flag: boolean }>                                  // never
+    type a4 = OptionalKeys<{ foo?: number, flag?: boolean }>                                // foo|flag
+    type a5 = OptionalKeys<{}>                                                              // never
+}
+
+/**
+ * 28. PickOptional 保留一个对象中的可选属性类型
+ */
+namespace space28 {
+    type ExcludeUndefined<T> = {
+        [K in keyof T]: Exclude<T[K], undefined>
+    }
+    type OptionalKeys<T> = { [K in keyof T]-?: undefined extends ExcludeUndefined<T>[K] ? K : never }[keyof T]
+    type PickOptional<T> = Pick<T, OptionalKeys<T>>
+    type a1 = PickOptional<{ foo: number | undefined, bar?: string, flag: boolean }>        // {bar?:string|undefined}
+    type a2 = PickOptional<{ foo: number, bar?: string }>                                   // {bar?:string}
+    type a3 = PickOptional<{ foo: number, flag: boolean }>                                  // {}
+    type a4 = PickOptional<{ foo?: number, flag?: boolean }>                                // {foo?:number,flag?:boolean}
+    type a5 = PickOptional<{}>                                                              // {}v
+}
+
+/**
+ * 29. RequiredKeys 获取对象类型中的必须属性的联合类型
+ */
+namespace space29 {
+    type ExcludeUndefined<T> = {
+        [K in keyof T]: Exclude<T[K], undefined>
+    }
+    type RequiredKeys<T, K = keyof T> = K extends keyof T ? undefined extends ExcludeUndefined<T>[K] ? never : K : never
+    type a1 = RequiredKeys<{ foo: number | undefined, bar?: string, flag: boolean }>        // foo|flag
+    type a2 = RequiredKeys<{ foo: number, bar?: string }>                                   // foo
+    type a3 = RequiredKeys<{ foo: number, flag: boolean }>                                  // foo|flag
+    type a4 = RequiredKeys<{ foo?: number, flag?: boolean }>                                // never
+    type a5 = RequiredKeys<{}>                                                              // never
+}
+
+/**
+ * 30. PickRequired 保留一个对象中的必须属性
+ */
+namespace space30 {
+    type ExcludeUndefined<T> = {
+        [K in keyof T]: Exclude<T[K], undefined>
+    }
+    type RequiredKeys<T, K = keyof T> = K extends keyof T ? undefined extends ExcludeUndefined<T>[K] ? never : K : never
+    type PickRequired<T> = Pick<T, RequiredKeys<T>>
+    type a1 = PickRequired<{ foo: number | undefined, bar?: string, flag: boolean }>        // {foo:number|undefined,flag:boolean}
+    type a2 = PickRequired<{ foo: number, bar?: string }>                                   // {foo:number}
+    type a3 = PickRequired<{ foo: number, flag: boolean }>                                  // {foo:number,flag:boolean}
+    type a4 = PickRequired<{ foo?: number, flag?: boolean }>                                // {}
+    type a5 = PickRequired<{}>                                                              // {}
+}
+
+/**
+ * 31. Merge 合并两个对象类型T以及K，如果属性重复，则以K中属性类型为准；
+ */
+namespace space31 {
+    type obj1 = {
+        el: string,
+        age: number
+    }
+
+    type obj2 = {
+        el: HTMLElement,
+        flag: boolean
+    }
+
+    type Merge<T, K> = {
+        [Key in Exclude<keyof T, keyof K>]: T[Key]
+    } & K
+
+    type obj3 = Merge<obj1, obj2>   // {el:HtmlElement,age:number,flag:boolean}
+
+    const a = { ...{} as obj3 }
+    console.log(a.el.scrollTop, a.age.toFixed(0), a.flag.valueOf())
+    // console.log(a.el.charAt(0))     // error
+}
+
+/**
+ * 32. IsNever 判断是否为never类型
+ */
+namespace space32 {
+    type IsNever<T> = [T] extends [never] ? true : false
+    type A = IsNever<never> // true
+    type B = IsNever<string> // false
+    type C = IsNever<undefined> // false
+    type D = IsNever<any> // false
+}
+
+/**
+ * 33. IsEmptyType 判断是否为没有属性的对象类型{}
+ */
+namespace space33 {
+    type IsEmptyType<T> = T extends {} ? true : false
+    type A = IsEmptyType<string> // false
+    type B = IsEmptyType<{ a: 3 }> // false
+    type C = IsEmptyType<{}> // true
+    type D = IsEmptyType<any> // false
+    type E = IsEmptyType<object> // false
+    type F = IsEmptyType<Object> // false
+    type G = IsEmptyType<unknown> // false
 }
