@@ -435,7 +435,9 @@ namespace space27 {
     }
     type A = ExcludeUndefined<{ foo: number | undefined, bar?: string, flag: boolean }>
     type OptionalKeys1<T> = { [K in keyof T]-?: undefined extends ExcludeUndefined<T>[K] ? K : never }[keyof T]
-    type OptionalKeys<T, K = keyof T> = K extends keyof T ? undefined extends ExcludeUndefined<T>[K] ? K : never : never
+    type OptionalKeys2<T, K = keyof T> = K extends keyof T ? undefined extends ExcludeUndefined<T>[K] ? K : never : never
+    // 忽略可选属性依旧可以赋值给改属性 而 必选属性不可以
+    type OptionalKeys<T, K = keyof T> = K extends keyof T ? Omit<T, K> extends T ? K : never : never
     type a1 = OptionalKeys<{ foo: number | undefined, bar?: string, flag: boolean }>        // bar
     type a2 = OptionalKeys<{ foo: number, bar?: string }>                                   // bar
     type a3 = OptionalKeys<{ foo: number, flag: boolean }>                                  // never
@@ -520,22 +522,177 @@ namespace space31 {
  */
 namespace space32 {
     type IsNever<T> = [T] extends [never] ? true : false
-    type A = IsNever<never> // true
-    type B = IsNever<string> // false
-    type C = IsNever<undefined> // false
-    type D = IsNever<any> // false
+    type A = IsNever<never>             // true
+    type B = IsNever<string>            // false
+    type C = IsNever<undefined>         // false
+    type D = IsNever<any>               // false
 }
 
 /**
  * 33. IsEmptyType 判断是否为没有属性的对象类型{}
  */
 namespace space33 {
-    type IsEmptyType<T> = T extends {} ? true : false
-    type A = IsEmptyType<string> // false
-    type B = IsEmptyType<{ a: 3 }> // false
-    type C = IsEmptyType<{}> // true
-    type D = IsEmptyType<any> // false
-    type E = IsEmptyType<object> // false
-    type F = IsEmptyType<Object> // false
-    type G = IsEmptyType<unknown> // false
+    type IsEmptyType<T> = [keyof T] extends [never] ?
+        number extends T ?
+        unknown extends T ? false : true
+        : false
+        : false
+    type A = IsEmptyType<string>            // false
+    type B = IsEmptyType<{ a: 3 }>          // false
+    type C = IsEmptyType<{}>                // true
+    type D = IsEmptyType<any>               // false
+    type E = IsEmptyType<object>            // false
+    type F = IsEmptyType<Object>            // false
+    type G = IsEmptyType<unknown>           // false
+}
+
+/**
+ * 34. IsAny 判断是否为any类型
+ */
+namespace space34 {
+    type IsAny<T> = [unknown] extends [T] ? [T] extends [string] ? true : false : false
+    type A = IsAny<string>      // false
+    type B = IsAny<any>         // true
+    type C = IsAny<unknown>     // false
+    type D = IsAny<never>       // false
+}
+
+/**
+ * 35. Redux Connect 实现Connect类型，能够自动地转化Redux Module对象中的函数类型
+ */
+namespace space35 {
+    interface Module {
+        count: number;
+        message: string;
+
+        asyncMethod<T, U>(input: Promise<T>): Promise<Action<U>>;
+
+        syncMethod<T, U>(action: Action<T>): Action<U>;
+    }
+
+    interface Action<T> {
+        payload?: T;
+        type: string;
+    }
+
+    type FuncKeys<T, K = keyof T> = K extends keyof T ? T[K] extends (...args: any) => any ? K : never : never
+    type FuncType<Func> = Func extends <T, U>(input: Promise<T>) => Promise<Action<U>> ?
+        <T, U>(input: T) => Action<U> :
+        Func extends <T, U>(action: Action<T>) => Action<U> ?
+        <T, U>(action: T) => Action<U> :
+        never
+    type Connect<T> = {
+        [K in FuncKeys<T>]: FuncType<T[K]>
+    }
+
+    type Res = Connect<Module>
+    // 这个要求的结果
+    type Result = {
+        asyncMethod<T, U>(input: T): Action<U>;
+        syncMethod<T, U>(action: T): Action<U>;
+    }
+
+    // 实现类型Connect，要求 Connect<Module> 的结果为上面的 Result
+    // 只要函数类型的属性；
+    // 如果函数是异步函数，要求自动解析出来Promise中的类型；
+}
+
+/**
+ * 36. UnionToBooleanProps 有且只有一个属性
+ */
+namespace space36 {
+
+    // 实现一个叫做 UnionToBooleanProps 的泛型，使得以下需求成立
+    type MessageStringType = "info" | "success" | "warning" | "error";
+
+    type UnionToBooleanProps<T extends string, K extends string = T> = K extends T ?
+        {
+            [Key1 in K]: true
+        } & {
+            [Key2 in Exclude<T, K>]?: false
+        }
+        : never
+
+    type OneMessageTypes = UnionToBooleanProps<MessageStringType>
+
+    // type OneMessageTypes =
+    //     { info: true, success?: never, warning?: never, error?: never } |
+    //     { info?: never, success: true, warning?: never, error?: never } |
+    //     { info?: never, success?: never, warning: true, error?: never } |
+    //     { info?: never, success?: never, warning?: never, error: true }
+
+    type Props = OneMessageTypes & { id: string; }
+    function Component(props: Props) {
+        return <></>
+    }
+
+    const a = <Component id="abc" info />           // correct
+    const b = <Component id="abc" success />        // correct
+    // const c = <Component id="abc" />                // wrong
+    // const d = <Component id="abc" info success />   // wrong
+
+    // 组件Component所接收的属性，有且只有一个 "info" | "success" | "warning" | "error" 中的值；
+}
+
+/**
+ * 37. UnionToIntersection 将联合类型转换为交叉类型
+ */
+namespace space37 {
+    type UnionToIntersection<T> = (T extends any ? (p: T) => T : never) extends (p: infer R) => infer T ? R : never
+    type A = UnionToIntersection<{ a: string } | { b: string } | { c: string }>
+    // {a: string} & {b: string} & {c: string}
+}
+
+/**
+ * 38. UnionPop 取出来联合类型中的任意一个类型
+ */
+namespace space38 {
+    type UnionPop<T> = ((T extends any ?
+        ((k: (a: T) => void) => void)
+        : never) extends (k: infer I) => void ? I
+        : never) extends (a: infer J) => void ? J
+        : never
+    type A1 = UnionPop<1 | 2 | 3>;
+    type A2 = UnionPop<string | number | boolean>;
+    type A3 = UnionPop<string | number | boolean | any>;
+
+    type p1 = { name: 1 }
+    type p2 = { age: 2 }
+    type p3 = { flag: true }
+
+    type k = ((x: p1) => number) & ((y: p2) => string) & ((z: p3) => boolean);  // 这里实际上就是一个重载函数
+    type d = k extends ((a: infer A) => void) ? A : 'b'       //  最后一个的参数类型：p3，这是为啥
+    type e = k extends ((a: any) => infer A) ? A : 'b'        //  最后一个的返回值类型：boolean，这是为啥
+
+    function overload(a: number): 'a';
+    function overload(a: string): 'b';
+    function overload(a: number | string) {
+        return a;
+    }
+
+    type f1 = typeof overload extends (a: infer A) => void ? A : 'b'        // 最后一个的参数类型：string，这是为啥
+    type f2 = typeof overload extends (a: any) => infer A ? A : 'b'         // 最后一个的返回值类型：'b'，这是为啥
+    type f3 = ReturnType<typeof overload>
+
+}
+
+/**
+ * 39. UnionToTuple 联合类型转换为元组类型
+ */
+namespace space39 {
+    type UnionPop<T> = ((T extends any ?
+        ((k: (a: T) => void) => void)
+        : never) extends (k: infer I) => void ? I
+        : never) extends (a: infer J) => void ? J
+        : never
+    type UnionToTuple<T, TT = T, Pre extends any[] = []> = [T] extends [Pre[number]] ?
+        Pre
+        : UnionToTuple<T, Exclude<TT, UnionPop<TT>>, [UnionPop<TT>, ...Pre]>
+    type a = UnionToTuple<1 | 2 | 3>                      // [1,2,3]
+    type b = UnionToTuple<1 | string | boolean>           // [1,string,boolean]
+    type c = UnionToTuple<any>                            // [any]
+
+    type Q1 = UnionToTuple<string | number | symbol>                                // [symbol,number,string]
+    type Q2 = UnionToTuple<string | number | symbol | boolean>                      // [boolean,symbol,number,string]
+    type Q3 = UnionToTuple<string | number | symbol | boolean | [boolean]>          // [boolean,[boolean],symbol,number,string]
 }
