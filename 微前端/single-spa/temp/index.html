@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <!-- <script src="https://cdn.bootcdn.net/ajax/libs/single-spa/5.9.3/umd/single-spa.min.js"></script> -->
+        <script type="module">
+            import { registerApplication, start } from './single-spa.js';
+            // let { registerApplication, start } = singleSpa;
+            const customProps = { data: 'message' };
+            let app1 = {
+                bootstrap: [
+                    async () => {
+                        console.log('A应用启动1');
+                    },
+                    async () => {
+                        console.log('A应用启动2');
+                    },
+                ],
+                mount: async (props) => {
+                    console.log('A应用挂载了', props);
+                },
+                unmount: async () => {
+                    console.log('A应用卸载');
+                },
+            };
+            let app2 = {
+                bootstrap: [
+                    async () => {
+                        console.log('B应用启动1');
+                    },
+                ],
+                mount: async (props) => {
+                    console.log('B应用挂载了', props);
+                },
+                unmount: async () => {
+                    console.log('B应用卸载');
+                },
+            };
+            // 注册应用
+            registerApplication(
+                'app1',
+                async () => {
+                    console.log('app1加载了');
+                    return app1;
+                },
+                (location) => location.hash.startsWith('#/a'),
+                customProps
+            );
+            registerApplication(
+                'app2',
+                async () => {
+                    console.log('app2加载了');
+                    return app2;
+                },
+                (location) => location.hash.startsWith('#/b'),
+                customProps
+            );
+            // 挂载应用
+            start();
+        </script>
+    </body>
+</html>
