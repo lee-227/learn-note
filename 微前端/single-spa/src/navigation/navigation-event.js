@@ -4,7 +4,7 @@ function urlReroute() {
     reroute(arguments);
 }
 const capturedEventListeners = {
-    // 捕获的事件 
+    // 捕获的事件
     hashchange: [],
     popstate: [],
 };
@@ -33,8 +33,18 @@ window.addEventListener('hashchange', urlReroute);
 window.addEventListener('popstate', urlReroute);
 
 export function callCapturedEventListeners(eventArguments) {
-    capturedEventListeners.hashchange.map(fn => fn(eventArguments));
-    capturedEventListeners.popstate.map(fn => fn(eventArguments));
+    if (eventArguments) {
+        const eventType = eventArguments[0].type;
+        if (routingEventsListeningTo.indexOf(eventType) >= 0) {
+            capturedEventListeners[eventType].forEach((listener) => {
+                try {
+                    listener.apply(this, eventArguments);
+                } catch (e) {
+                    throw e;
+                }
+            });
+        }
+    }
 }
 
 function patchedUpdateState(updateState, methodName) {
