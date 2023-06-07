@@ -1,6 +1,12 @@
-import { reroute } from './navigation/reroute.js';
-export let started = false;
+import { reroute } from "./navigation/reroute.js";
+
+let started = false;
+
 export function start() {
     started = true;
-    reroute();
+    reroute(); // 进行应用更改，加载匹配到的子应用
+}
+
+export function isStarted() {
+    return started;
 }

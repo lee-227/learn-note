@@ -1,31 +1,41 @@
-import {
-    LOADING_SOURCE_CODE,
-    NOT_BOOTSTRAPPED,
-    NOT_LOADED,
-} from '../applications/app.helpers.js';
-function flattenFnArray(fns) {
-    fns = Array.isArray(fns) ? fns : [fns]; // 包装成数组，进行组合
-    return function (props) {
-        return fns.reduce(
-            (resultPromise, fn) => resultPromise.then(() => fn(props)),
-            Promise.resolve()
-        );
-    };
-}
+import { LOADING_SOURCE_CODE, LOAD_ERROR, NOT_BOOTSTRAPPED, NOT_LOADED } from '../applications/helper.js';
+import { flattenFnArray } from './helper.js';
+
 export function toLoadPromise(app) {
     return Promise.resolve().then(() => {
-        if (app.status !== NOT_LOADED) {
-            // 状态 必须是NOT_LOADED才加载
+        if (app.loadPromise) {
+            return app.loadPromise;
+        }
+
+        if (app.status !== NOT_LOADED && app.status !== LOAD_ERROR) {
             return app;
         }
+
         app.status = LOADING_SOURCE_CODE;
-        return app.loadApp(app.customProps).then((val) => {
-            let { bootstrap, mount, unmount } = val; // 获取接口协议
-            app.status = NOT_BOOTSTRAPPED;
-            app.bootstrap = flattenFnArray(bootstrap);
-            app.mount = flattenFnArray(mount);
-            app.unmount = flattenFnArray(unmount);
-            return app; // 返回应用
-        });
+
+        return (app.loadPromise = Promise.resolve().then(() => {
+            const loadPromise = app.loadApp(app.customProps);
+
+            return loadPromise
+                .then((val) => {
+                    app.status = NOT_BOOTSTRAPPED;
+                    app.bootstrap = flattenFnArray(val, 'bootstrap');
+                    app.mount = flattenFnArray(val, 'mount');
+                    app.unmount = flattenFnArray(val, 'unmount');
+                    app.unload = flattenFnArray(val, 'unload');
+
+                    delete app.loadPromise;
+
+                    return app;
+                })
+                .catch((err) => {
+                    console.error(err);
+                    app.status = LOAD_ERROR;
+
+                    delete app.loadPromise;
+
+                    return app;
+                });
+        }));
     });
 }

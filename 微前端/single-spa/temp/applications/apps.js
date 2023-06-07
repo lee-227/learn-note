@@ -1,4 +1,4 @@
-import { getAppUnloadInfo } from '../lifecycles/unload';
+import { getAppUnloadInfo } from '../lifecycles/unload.js';
 import {
     isActive,
     LOADING_SOURCE_CODE,
@@ -9,7 +9,7 @@ import {
     NOT_MOUNTED,
     shouldBeActive,
     SKIP_BECAUSE_BROKEN,
-} from './helper';
+} from './helper.js';
 
 // 用于存储注册的应用
 const apps = [];

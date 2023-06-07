@@ -1,19 +1,22 @@
-import {
-    MOUNTED,
-    NOT_MOUNTED,
-    UNMOUNTING,
-} from '../applications/app.helpers.js';
-export function toUnmoutPromise(app) {
+import { MOUNTED, NOT_MOUNTED, SKIP_BECAUSE_BROKEN, UNMOUNTING } from '../applications/helper.js';
+
+export function toUnmountPromise(app) {
     return Promise.resolve().then(() => {
         if (app.status !== MOUNTED) {
-            // 如果不是 挂载直接跳出
             return app;
         }
         app.status = UNMOUNTING;
-        return app
-            .unmount(app.customProps) // 调用卸载钩子
+
+        return app.unmount(app.customProps)
             .then(() => {
                 app.status = NOT_MOUNTED;
+                return app;
+            })
+            .catch((err) => {
+                console.error(err)
+                app.status = SKIP_BECAUSE_BROKEN;
+                return app;
             });
     });
 }
+ƒ

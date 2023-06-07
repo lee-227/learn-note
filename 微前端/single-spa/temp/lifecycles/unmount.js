@@ -1,20 +1,19 @@
-import { BOOTSTRAPPING, NOT_BOOTSTRAPPED, NOT_MOUNTED, SKIP_BECAUSE_BROKEN } from '../applications/helper.js';
+import { MOUNTED, NOT_MOUNTED, SKIP_BECAUSE_BROKEN, UNMOUNTING } from '../applications/helper.js';
 
-export function toBootstrapPromise(app) {
+export function toUnmountPromise(app) {
     return Promise.resolve().then(() => {
-        if (app.status !== NOT_BOOTSTRAPPED) {
+        if (app.status !== MOUNTED) {
             return app;
         }
+        app.status = UNMOUNTING;
 
-        app.status = BOOTSTRAPPING;
-
-        return app.bootstrap(app.customProps)
+        return app.unmount(app.customProps)
             .then(() => {
                 app.status = NOT_MOUNTED;
                 return app;
             })
             .catch((err) => {
-                console.error(err);
+                console.error(err)
                 app.status = SKIP_BECAUSE_BROKEN;
                 return app;
             });

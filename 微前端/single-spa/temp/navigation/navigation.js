@@ -1,5 +1,5 @@
-import { isStarted } from '../start';
-import { reroute } from './reroute';
+import { isStarted } from '../start.js';
+import { reroute } from './reroute.js';
 
 // 用于收集路由事件监听器
 const eventListeners = {
