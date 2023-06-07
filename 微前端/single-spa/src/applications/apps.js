@@ -1,4 +1,5 @@
 import { getAppUnloadInfo } from '../lifecycles/unload.js';
+import { reroute } from '../navigation/reroute.js';
 import {
     isActive,
     LOADING_SOURCE_CODE,
@@ -70,6 +71,7 @@ export function registerApplication(name, loadApp, activeWhen, customProps) {
             registration
         )
     );
+    reroute();
 }
 
 function sanitizeLoadApp(loadApp) {
