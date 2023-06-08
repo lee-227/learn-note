@@ -4,11 +4,11 @@ import {
     NOT_LOADED,
     notSkipped,
     withoutLoadError,
-    isntLoaded,
+    isNotLoaded,
     shouldBeActive,
-    shouldntBeActive,
+    shouldNotBeActive,
     isLoaded,
-    isntActive,
+    isNotActive,
     isActive
 } from './app.helper.js';
 import { invoke } from '../navigation/invoke.js';
@@ -25,7 +25,7 @@ const APPS = [];
  * @return {*[]}
  */
 export function getAppsToLoad() {
-    return APPS.filter(notSkipped).filter(withoutLoadError).filter(isntLoaded).filter(shouldBeActive);
+    return APPS.filter(notSkipped).filter(withoutLoadError).filter(isNotLoaded).filter(shouldBeActive);
 }
 
 /**
@@ -36,7 +36,7 @@ export function getAppsToLoad() {
  * 4、需要被mounted的
  */
 export function getAppsToMount() {
-    return APPS.filter(notSkipped).filter(isLoaded).filter(isntActive).filter(shouldBeActive);
+    return APPS.filter(notSkipped).filter(isLoaded).filter(isNotActive).filter(shouldBeActive);
 }
 
 /**
@@ -46,7 +46,7 @@ export function getAppsToMount() {
  * 3、需要卸载的
  */
 export function getAppsToUnmount() {
-    return APPS.filter(notSkipped).filter(isActive).filter(shouldntBeActive);
+    return APPS.filter(notSkipped).filter(isActive).filter(shouldNotBeActive);
 }
 
 /**

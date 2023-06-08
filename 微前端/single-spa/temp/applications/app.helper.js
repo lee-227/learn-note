@@ -36,7 +36,7 @@ export function isLoaded(app) {
     return app.status !== NOT_LOADED && app.status !== LOAD_ERROR && app.status !== LOAD_RESOURCE_CODE;
 }
 
-export function isntLoaded(app) {
+export function isNotLoaded(app) {
     return !isLoaded(app);
 }
 
@@ -44,7 +44,7 @@ export function isActive(app) {
     return app.status === MOUNTED;
 }
 
-export function isntActive(app) {
+export function isNotActive(app) {
     return !isActive(app)
 }
 
@@ -57,7 +57,7 @@ export function shouldBeActive(app) {
     }
 }
 
-export function shouldntBeActive(app) {
+export function shouldNotBeActive(app) {
     try {
         return !app.activityWhen(window.location);
     } catch (e) {
