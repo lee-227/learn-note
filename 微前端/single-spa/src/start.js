@@ -1,10 +1,14 @@
-import { reroute } from "./navigation/reroute.js";
+'use strict';
+import { invoke } from './navigation/invoke.js';
 
 let started = false;
 
 export function start() {
+    if (started) {
+        return;
+    }
     started = true;
-    reroute(); // 进行应用更改，加载匹配到的子应用
+    return invoke();
 }
 
 export function isStarted() {

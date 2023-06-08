@@ -1,22 +1,22 @@
-import { BOOTSTRAPPING, NOT_BOOTSTRAPPED, NOT_MOUNTED, SKIP_BECAUSE_BROKEN } from '../applications/helper.js';
+'use strict';
+
+import { NOT_BOOTSTRAPPED, BOOTSTRAPPING, NOT_MOUNTED, SKIP_BECAUSE_BROKEN } from "../applications/app.helper.js";
+import { reasonableTime } from '../applications/timeouts.js';
+import { getProps } from './helper.js';
 
 export function toBootstrapPromise(app) {
-    return Promise.resolve().then(() => {
-        if (app.status !== NOT_BOOTSTRAPPED) {
-            return app;
-        }
+    if (app.status !== NOT_BOOTSTRAPPED) {
+        return Promise.resolve(app);
+    }
 
-        app.status = BOOTSTRAPPING;
+    app.status = BOOTSTRAPPING;
 
-        return app.bootstrap(app.customProps)
-            .then(() => {
-                app.status = NOT_MOUNTED;
-                return app;
-            })
-            .catch((err) => {
-                console.error(err);
-                app.status = SKIP_BECAUSE_BROKEN;
-                return app;
-            });
+    return reasonableTime(app.bootstrap(getProps(app)), `app: ${app.name} bootstrapping`, app.timeouts.bootstrap).then(() => {
+        app.status = NOT_MOUNTED;
+        return app;
+    }).catch(e => {
+        console.log(e);
+        app.status = SKIP_BECAUSE_BROKEN;
+        return app;
     });
 }
