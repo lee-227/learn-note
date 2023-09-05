@@ -36,7 +36,7 @@ yarn workspace child add commander
 ## 删除所有的 node_modules
 lerna clean 等于 yarn workspaces run clean
 
-## 安装和link
+## 安装依赖 和 创建软连接
 yarn install 等于 lerna bootstrap --npm-client yarn --use-workspaces
 
 ## 重新获取所有的 node_modules
