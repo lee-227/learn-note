@@ -1,5 +1,10 @@
 {
   "name": "child",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "XiaoLee <lee_227@163.com>",
+  "homepage": "",
+  "license": "ISC",
   "main": "lib/child.js",
   "scripts": {
     
