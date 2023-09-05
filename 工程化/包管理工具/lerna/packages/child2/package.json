@@ -1,0 +1,12 @@
+{
+  "name": "child2",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "XiaoLee <lee_227@163.com>",
+  "homepage": "",
+  "license": "ISC",
+  "main": "lib/child2.js",
+  "scripts": {
+    "test": "node ./__tests__/child2.test.js"
+  }
+}
