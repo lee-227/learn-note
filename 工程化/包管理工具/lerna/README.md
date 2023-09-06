@@ -24,6 +24,17 @@ lerna init
 ## 创建子包
 lerna create package-name
 
+## 创建软链
+lerna link
+
+## 执行 npm 命令
+lerna run test
+lerna run test --scope child
+
+## 执行脚本
+lerna exec -- test
+lerna exec --scope child -- test
+
 ## 查看工作空间信息
 yarn workspaces info
 
@@ -37,7 +48,7 @@ yarn workspace child add commander
 lerna clean 等于 yarn workspaces run clean
 
 ## 安装依赖 和 创建软连接
-yarn install 等于 lerna bootstrap --npm-client yarn --use-workspaces
+yarn install 等于 lerna bootstrap
 
 ## 重新获取所有的 node_modules
 yarn install --force
@@ -47,3 +58,6 @@ yarn cache dir
 
 ## 清除本地缓存
 yarn cache clean
+
+## 发布包
+lerna publish
