@@ -2,7 +2,7 @@ let fs = require('fs');
 let path = require('path');
 let Module = require('./module');
 let MagicString = require('magic-string');
-const { hasOwnProperty, replaceIdentifiers } = require('./utils');
+const { hasOwnProperty, replaceIdentifiers } = require('./utils.js');
 class Bundle {
   constructor(options) {
     //入口文件数据
@@ -36,7 +36,6 @@ class Bundle {
       modules.pop(); //最后一个模块不需要重命名,保留 原来的名称即可 [age1,age2]
       modules.forEach((module, index) => {
         let replacement = `${name}$${modules.length - index}`;
-        debugger;
         module.rename(name, replacement); //module age=>age$2
       });
     });

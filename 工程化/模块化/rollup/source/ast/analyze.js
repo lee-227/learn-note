@@ -7,12 +7,12 @@ function analyze(ast, code, module) {
     Object.defineProperties(statement, {
       _module: { value: module },
       _source: { value: code.snip(statement.start, statement.end) },
-      _defines: { value: {} }, //此节点上定义的变量say
-      _dependsOn: { value: {} }, //此此节点读取了哪些变量
-      _modifies: { value: {} }, //本语句修改的变量
+      _defines: { value: {} }, //此节点上定义的变量
+      _dependsOn: { value: {} }, //此节点读取了哪些变量
+      _modifies: { value: {} }, //此节点修改了哪些变量
     });
-    //import { name, age } from './msg';
     if (statement.type === 'ImportDeclaration') {
+      //import { name, age } from './msg';
       let source = statement.source.value; // ./msg
       statement.specifiers.forEach((specifier) => {
         let importName = specifier.imported.name; //导入的变量名
@@ -21,6 +21,7 @@ function analyze(ast, code, module) {
         module.imports[localName] = { source, importName };
       });
     } else if (statement.type === 'ExportNamedDeclaration') {
+      // export let name = 'lee'
       const declaration = statement.declaration;
       if (declaration && declaration.type === 'VariableDeclaration') {
         const declarations = declaration.declarations;
@@ -34,7 +35,7 @@ function analyze(ast, code, module) {
     }
   });
   //第2次循环创建作用域链
-  let currentScope = new Scope({ name: '全局作用域' });
+  let currentScope = new Scope({ name: '当前模块顶级作用域' });
   //创建作用域链,为了知道我在此模块中声明哪些变量，这些变量的声明节点是哪个 var name = 1;
   ast.body.forEach((statement) => {
     function checkForReads(node) {
@@ -72,8 +73,9 @@ function analyze(ast, code, module) {
     }
     walk(statement, {
       enter(node) {
-        //收集本节点上使用的变量
+        // 收集本节点上使用的变量
         checkForReads(node);
+        // 收集本节点修改的变量
         checkForWrites(node);
         let newScope;
         switch (node.type) {

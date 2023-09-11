@@ -20,6 +20,7 @@ class Module {
     this.definitions = {};
     //存放变量修改语句
     this.modifications = {};
+    //存放命名冲突的变量
     this.canonicalNames = {};
     analyze(this.ast, this.code, this);
   }
