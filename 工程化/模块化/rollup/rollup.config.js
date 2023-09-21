@@ -1,12 +1,17 @@
-import json from 'rollup-plugin-json';
+import {defineConfig} from 'rollup';
+import json from '@rollup/plugin-json';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-export default {
+import terser from '@rollup/plugin-terser';
+import babel from '@rollup/plugin-babel';
+
+export default defineConfig({
   input: './src/index.js',
   output: {
-    // file: 'dist/bundle.js',
+    // file: './dist/lee.js',
     dir: 'dist',
-    format: 'amd',
+    format: 'es',
   },
-  plugins: [json(), resolve(), commonjs()],
-};
+  external: ['lodash'],
+  plugins: [json(), resolve(), commonjs(), babel()],
+});
