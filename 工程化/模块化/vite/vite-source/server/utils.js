@@ -3,7 +3,7 @@ function normalizePath(id) {
 }
 exports.normalizePath = normalizePath;
 
-const knownJsSrcRE = /\.js/;
+const knownJsSrcRE = /\.(js|vue)/;
 const isJSRequest = (url) => {
   if (knownJsSrcRE.test(url)) {
     return true;
