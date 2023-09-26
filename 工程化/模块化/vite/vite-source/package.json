@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "vite": "./bin/vite.js"
+    "vite": "./lib/cli.js"
   },
   "bin": {
     "vite": "./bin/vite.js"
