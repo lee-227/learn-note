@@ -28,6 +28,7 @@ async function createServer() {
     httpServer,
     pluginContainer,
     async listen(port) {
+      // 1. 启动服务前需要先 预编译第三方依赖
       await runOptimize(config, server);
       httpServer.listen(port, async () => {
         console.log(`dev server running at: http://localhost:${port}`);
@@ -43,12 +44,17 @@ async function createServer() {
       await plugin.configureServer(server);
     }
   }
+  // 19. 修改第三方依赖的导入路径 以便能正确请求到预编译后的内容
+  // 28. 对于 vue 文件的请求也会再次进行转换
   middlewares.use(transformMiddleware(server));
+  // 创建静态资源中间件 返回静态资源
   middlewares.use(serveStaticMiddleware(config));
   return server;
 }
 async function runOptimize(config, server) {
+  // 2. 开始执行预编译
   const optimizeDeps = await createOptimizeDepsRun(config);
+  // 18. 预编译完成 将 _metadata 保存至 server 供后续使用
   server._optimizeDepsMetadata = optimizeDeps.metadata;
 }
 exports.createServer = createServer;

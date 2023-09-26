@@ -12,6 +12,7 @@ function importAnalysisPlugin(config) {
     },
     async transform(source, importer) {
       await init;
+      // 23. 利用 es-module-lexer 解析 导入的模块
       let imports = parse(source)[0];
       if (!imports.length) {
         return source;
@@ -29,6 +30,7 @@ function importAnalysisPlugin(config) {
         await moduleGraph.ensureEntryFromUrl(url);
         return url;
       };
+      // 24. 遍历所有的导入模块
       for (let index = 0; index < imports.length; index++) {
         const { s: start, e: end, n: specifier } = imports[index];
         const rawUrl = source.slice(start, end);
@@ -45,8 +47,10 @@ function importAnalysisPlugin(config) {
           }
         }
         if (specifier) {
+          // 25. 解析导入的模块路径 将其转换为相对路径
           const normalizedUrl = await normalizeUrl(specifier);
           if (normalizedUrl !== specifier) {
+            // 26. 将解析后的路径重写 此时完成了第三方模块 -> 相对路径的转换
             ms.overwrite(start, end, normalizedUrl);
           }
           importedUrls.add(normalizedUrl);

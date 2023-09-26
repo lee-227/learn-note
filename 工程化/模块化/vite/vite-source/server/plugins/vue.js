@@ -15,6 +15,8 @@ function vue() {
     config(config) {
       root = config.root;
       return {
+        // config 中的 define 会经过 define 插件将其替换掉
+        // 这是实现的是支持环境变量的功能
         define: {
           __VUE_OPTIONS_API__: true,
           __VUE_PROD_DEVTOOLS__: false,
@@ -34,10 +36,13 @@ function vue() {
       }
     },
     async transform(code, id) {
+      // 32. 处理 vue 文件请求
       const { filename, query } = parseVueRequest(id);
       if (filename.endsWith('.vue')) {
+        // 38. 对于 css 会再次发出一个 css 请求
         if (query.get('type') === 'style') {
           const descriptor = await getDescriptor(filename, root);
+          // 39. 将 css 转成 js 返回值客户端
           let result = await transformStyle(
             code,
             descriptor,
@@ -45,6 +50,7 @@ function vue() {
           );
           return result;
         } else {
+          // 33. 使用 vue/compiler-sfc 对 vue 单文件组件进行编译
           let result = await transformMain(code, filename);
           return result;
         }
@@ -95,9 +101,13 @@ async function getDescriptor(filename, root) {
 }
 async function transformMain(source, filename) {
   const descriptor = await getDescriptor(filename);
+  // 34. 处理 js
   const scriptCode = genScriptCode(descriptor, filename);
+  // 35. 处理 html
   const templateCode = genTemplateCode(descriptor, filename);
+  // 36. 处理 css
   const stylesCode = genStyleCode(descriptor, filename);
+  // 37. 将编译后的所有内容 拼接成 js 字符串 返回到客户端
   let resolvedCode = [
     stylesCode,
     templateCode,

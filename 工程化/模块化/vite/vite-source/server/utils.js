@@ -1,3 +1,4 @@
+// 路径格式统一处理
 function normalizePath(id) {
   return id.replace(/\\/g, '/');
 }

@@ -3,7 +3,7 @@ const { normalizePath } = require('./utils');
 const { resolvePlugins } = require('./plugins');
 const fs = require('fs-extra');
 async function resolveConfig() {
-  //当前的根目录 window \\  linux /
+  // 将执行 vite 命令时的目录作为根目录
   const root = normalizePath(process.cwd());
   const cacheDir = normalizePath(path.resolve(`node_modules/.vite`));
   let config = {
