@@ -4,9 +4,11 @@ const LexerState = {
   inSingleQuoteString: 1,
   inTemplateString: 2,
 };
+
 function getShortName(file, root) {
   return file.startsWith(root + '/') ? path.posix.relative(root, file) : file;
 }
+
 async function handleHMRUpdate(file, server) {
   const { config, moduleGraph } = server;
   const shortFile = getShortName(file, config.root);

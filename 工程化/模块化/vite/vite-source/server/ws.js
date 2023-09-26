@@ -9,9 +9,11 @@ function createWebSocketServer(httpServer) {
       });
     }
   });
+
   wss.on('connection', (socket) => {
     socket.send(JSON.stringify({ type: 'connected' }));
   });
+
   return {
     on: wss.on.bind(wss),
     off: wss.off.bind(wss),
