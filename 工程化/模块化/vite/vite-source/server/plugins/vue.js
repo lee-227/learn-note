@@ -14,6 +14,12 @@ function vue() {
     name: 'vue',
     config(config) {
       root = config.root;
+      return {
+        define: {
+          __VUE_OPTIONS_API__: true,
+          __VUE_PROD_DEVTOOLS__: false,
+        },
+      };
     },
     async load(id) {
       const { filename, query } = parseVueRequest(id);
