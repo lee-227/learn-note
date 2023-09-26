@@ -9,6 +9,7 @@ async function transformRequest(url, server) {
   } else {
     code = await fs.readFile(id, 'utf-8');
   }
+  await server.moduleGraph.ensureEntryFromUrl(url);
   const transformResult = await pluginContainer.transform(code, id);
   return transformResult;
 }
