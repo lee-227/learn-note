@@ -1,6 +1,8 @@
 const path = require('path');
 class ModuleNode {
+  // 存放导入了此模块的附魔卡
   importers = new Set();
+  // 存放此模块热更新接受的模块
   acceptedHmrDeps = new Set();
   constructor(url) {
     this.url = url;
@@ -23,6 +25,7 @@ class ModuleGraph {
     return this.idToModuleMap.get(id);
   }
   async ensureEntryFromUrl(rawUrl) {
+    // 5.hmr serve 根据 url 创建对应模块
     const [url, resolvedId] = await this.resolveUrl(rawUrl);
     let mod = this.urlToModuleMap.get(url);
     if (!mod) {
@@ -47,11 +50,13 @@ class ModuleGraph {
   async updateModuleInfo(mod, importedModules, acceptedModules) {
     for (const imported of importedModules) {
       const dep = await this.ensureEntryFromUrl(imported);
+      // 10.hmr serve 创建子模块 将子模块的 importers 加入父模块
       dep.importers.add(mod);
     }
     const deps = (mod.acceptedHmrDeps = new Set());
     for (const accepted of acceptedModules) {
       const dep = await this.ensureEntryFromUrl(accepted);
+      // 11.hmr serve 将此模块中添加 accept 的热更新的子模块
       deps.add(dep);
     }
   }

@@ -11,6 +11,7 @@ async function transformRequest(url, server) {
   } else {
     code = await fs.readFile(id, 'utf-8');
   }
+  // 4.hmr serve 解析模块时需要 创建模块
   await server.moduleGraph.ensureEntryFromUrl(url);
   // 22. 开始转换路径
   // 31. 开始转换 vue 文件 使用 vue 插件的 transform 方法

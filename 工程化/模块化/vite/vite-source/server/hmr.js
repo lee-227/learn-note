@@ -12,6 +12,7 @@ function getShortName(file, root) {
 async function handleHMRUpdate(file, server) {
   const { config, moduleGraph } = server;
   const shortFile = getShortName(file, config.root);
+  // 13.hmr serve 通过变化的文件路径找到对应模块
   const modules = moduleGraph.getModulesByFile(file) || [];
   updateModules(shortFile, modules, server);
 }
@@ -20,6 +21,7 @@ function updateModules(file, modules, { ws }) {
   const updates = [];
   for (const mod of modules) {
     const boundaries = new Set();
+    // 14. hmr serve 构建热更新信息
     propagateUpdate(mod, boundaries);
     updates.push(
       ...[...boundaries].map(({ boundary, acceptedVia }) => ({
@@ -29,6 +31,7 @@ function updateModules(file, modules, { ws }) {
       }))
     );
   }
+  // 16. hmr serve 发送至客户端 通知热更新
   ws.send({
     type: 'update',
     updates,
@@ -40,6 +43,7 @@ function propagateUpdate(node, boundaries) {
   }
   for (const importer of node.importers) {
     if (importer.acceptedHmrDeps.has(node)) {
+      // 15.hmr serve 找到父模块 且 父模块接受此模块的热更新
       boundaries.add({
         boundary: importer,
         acceptedVia: node,

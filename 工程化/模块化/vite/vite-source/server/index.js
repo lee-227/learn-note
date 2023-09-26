@@ -14,10 +14,13 @@ async function createServer() {
   const config = await resolveConfig();
   const middlewares = connect();
   const httpServer = require('http').createServer(middlewares);
+  // 1.hmr serve 创建 ws 服务 同 http 公用一个端口
   const ws = createWebSocketServer(httpServer, config);
+  // 2.hmr serve 监听文件变化
   const watcher = chokidar.watch(path.resolve(config.root), {
     ignored: ['**/node_modules/**', '**/.git/**'],
   });
+  // 3.hmr serve 创建依赖图
   const moduleGraph = new ModuleGraph((url) => pluginContainer.resolveId(url));
   const pluginContainer = await createPluginContainer(config);
   const server = {
@@ -35,6 +38,7 @@ async function createServer() {
       });
     },
   };
+  // 12.hmr serve 文件发生变化后 开始热更新
   watcher.on('change', async (file) => {
     file = normalizePath(file);
     await handleHMRUpdate(file, server);
