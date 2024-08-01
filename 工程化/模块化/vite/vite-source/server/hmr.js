@@ -21,7 +21,7 @@ function updateModules(file, modules, { ws }) {
   const updates = [];
   for (const mod of modules) {
     const boundaries = new Set();
-    // 14. hmr serve 构建热更新信息
+    // 14.hmr serve 构建热更新信息
     propagateUpdate(mod, boundaries);
     updates.push(
       ...[...boundaries].map(({ boundary, acceptedVia }) => ({
@@ -31,7 +31,7 @@ function updateModules(file, modules, { ws }) {
       }))
     );
   }
-  // 16. hmr serve 发送至客户端 通知热更新
+  // 16.hmr serve 发送至客户端 通知热更新
   ws.send({
     type: 'update',
     updates,

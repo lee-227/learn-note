@@ -1,7 +1,7 @@
 console.log('[vite] connecting...');
 var socket = new WebSocket(`ws://${window.location.host}`, 'vite-hmr');
 socket.addEventListener('message', async ({ data }) => {
-  // 17. hmr client 收到更新通知
+  // 17.hmr client 收到更新通知
   handleMessage(JSON.parse(data));
 });
 async function handleMessage(payload) {
@@ -10,10 +10,10 @@ async function handleMessage(payload) {
       console.log(`[vite] connected.`);
       break;
     case 'update':
-      // 18. hmr client 确认是模块更新
+      // 18.hmr client 确认是模块更新
       payload.updates.forEach((update) => {
         if (update.type === 'js-update') {
-          // 19. hmr client 获取热更新模块
+          // 19.hmr client 获取热更新模块
           fetchUpdate(update);
         }
       });
