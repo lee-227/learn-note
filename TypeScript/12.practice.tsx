@@ -101,9 +101,12 @@ namespace space9 {
             [...Arr, L]
         > : S;
     type KebabCase2<T, S extends string = ''> =
-        T extends `${infer L}${infer R}` ? KebabCase2<R,
-            L extends Uppercase<L> ? `${S}-${Lowercase<L>}` : `${S}${L}`
-        > : S extends `${infer L}${infer R}` ? R : S;
+        T extends `${infer L}${infer R}`
+            ? KebabCase2<R, L extends Uppercase<L>
+                ? `${S}-${Lowercase<L>}`
+                : `${S}${L}`>
+            : S extends `${infer L}${infer R}`
+        ? R : S;
     type a1 = KebabCase2<'HandleOpenFlag'>           // handle-open-flag
     type a2 = KebabCase2<'OpenFlag'>                 // open-flag
 }
@@ -278,8 +281,8 @@ namespace space18 {
  * 19. Flat 拍平元组
  */
 namespace space19 {
-    type Flat<T, P extends any[] = []> = T extends [infer L, ...infer R] ?
-        [...(L extends any[] ? Flat<L> : [L]), ...Flat<R>, ...P]
+    type Flat<T> = T extends [infer L, ...infer R] ?
+        [...(L extends any[] ? Flat<L> : [L]), ...Flat<R>]
         : T
     type A = Flat<[1, 2, 3]> // [1,2,3]
     type B = Flat<[1, [2, 3], [4, [5, [6]]]]> // [1,2,3,4,5,6]
