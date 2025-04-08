@@ -1,0 +1,8 @@
+lib-test
+dist
+build
+node_modules
+coverage
+npm-debug.log
+.idea
+package-lock.json
